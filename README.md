@@ -189,13 +189,19 @@ Open `http://localhost:5000`, pick your serial port from the UI, detections star
 
 ## Hardware
 
-**Board:** Seeed Studio XIAO ESP32-S3
+**Board:** Seeed Studio XIAO ESP32-C6 (4 MB flash, no PSRAM)
 
 | Pin | Function |
 |-----|----------|
-| GPIO 3 | Piezo buzzer |
-| GPIO 21 | Onboard user LED (active low) |
-| GPIO 43 | Serial1 TX mirror (115200 baud) |
+| GPIO 0 (D0) | Piezo buzzer |
+| GPIO 15 | Onboard user LED (active low) |
+| GPIO 16 (D6 / TX) | Serial1 TX mirror (115200 baud) |
+
+> **Why not GPIO 3?** On the XIAO ESP32-C6, GPIO 3 is `WIFI_ENABLE` (the RF
+> antenna control pin). The original ESP32-S3 build put the buzzer there;
+> reusing it on the C6 would break WiFi, so the buzzer is moved to D0/GPIO 0.
+> The onboard LED is GPIO 15 on the C6 (was GPIO 21 on the S3), and the
+> Serial1 mirror moves from the S3's GPIO 43 (which the C6 lacks) to D6/GPIO 16.
 
 Boot sound: first 6 notes of Super Mario Bros. World 1-2 (underground).
 
@@ -211,7 +217,12 @@ pio run -t upload           # flash
 pio device monitor          # serial output
 ```
 
-`platformio.ini` and `partitions.csv` are at the root (1.9 MB SPIFFS partition, 6 MB app). No extra libraries needed beyond the Arduino-ESP32 core that ships with the espressif32 platform.
+`platformio.ini` and `partitions.csv` are at the root. The 4 MB C6 layout uses
+a single ~2.8 MB factory app + 512 KB SPIFFS partition (no OTA). The ESP32-C6
+requires Arduino-ESP32 3.x / ESP-IDF 5.1+, so the build pins the
+[pioarduino](https://github.com/pioarduino/platform-espressif32) community fork
+of the `espressif32` platform (the official platform does not support the C6).
+No extra libraries are needed beyond the Arduino-ESP32 core.
 
 ---
 

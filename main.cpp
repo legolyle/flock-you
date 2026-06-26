@@ -9,18 +9,24 @@
 // CONFIG
 // ============================================================
 
-#define BUZZER_PIN 3
+// --- Seeed XIAO ESP32-C6 pin map ---
+// NOTE: GPIO3 on the XIAO ESP32-C6 is WIFI_ENABLE (the RF/antenna control
+// pin). Driving it as a buzzer would break WiFi, so the buzzer is moved to
+// D0 = GPIO0. The onboard user LED on the XIAO ESP32-C6 is GPIO15 (active
+// low). The S3's GPIO43 UART-mirror pin does not exist on the C6, so the
+// Serial1 mirror is routed to the labeled TX pin, D6 = GPIO16.
+#define BUZZER_PIN 0          // D0 (was GPIO3 on the S3 — GPIO3 is WIFI_ENABLE on C6)
 #define USE_BUZZER 1
 
-// Onboard user LED on Seeed XIAO ESP32-S3 is GPIO21 and is ACTIVE LOW
+// Onboard user LED on Seeed XIAO ESP32-C6 is GPIO15 and is ACTIVE LOW
 // (driving the pin LOW lights the LED).
-#define LED_PIN          21
+#define LED_PIN          15   // was GPIO21 on the S3
 #define USE_LED          1
 #define LED_ACTIVE_HIGH  0
 #define LED_FLASH_MS     120
 
 #define MIRROR_SERIAL    1
-#define MIRROR_TX_PIN    43
+#define MIRROR_TX_PIN    16   // D6 / TX (was GPIO43 on the S3, which C6 lacks)
 #define MIRROR_BAUD      115200
 
 #define CHANNEL_MODE_FULL_HOP   0
@@ -230,7 +236,7 @@ typedef struct __attribute__((packed)) {
 // HELPERS
 // ============================================================
 
-// Dual-output: prints to both Serial (USB) and Serial1 (GPIO43)
+// Dual-output: prints to both Serial (USB) and Serial1 (GPIO16 / TX)
 static char _dualBuf[384];
 
 static void dualPrintf(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
@@ -1045,12 +1051,15 @@ static void heartbeatTick() {
 void setup() {
   Serial.begin(115200);
   // Crucial for USB-optional operation: without this, Serial.write() will
-  // block indefinitely on an ESP32-S3 USB-CDC port when no host is attached.
+  // block indefinitely on a CDC serial port when no host is attached.
+  // The XIAO ESP32-C6 has no native USB; with ARDUINO_USB_CDC_ON_BOOT=1
+  // (set by the board) `Serial` is the on-board USB-to-UART bridge, which
+  // still exposes setTxTimeoutMs() in Arduino-ESP32 3.x.
   Serial.setTxTimeoutMs(0);
   delay(300);
 
 #if MIRROR_SERIAL
-  Serial1.begin(MIRROR_BAUD, SERIAL_8N1, -1, MIRROR_TX_PIN);  // TX-only on GPIO43
+  Serial1.begin(MIRROR_BAUD, SERIAL_8N1, -1, MIRROR_TX_PIN);  // TX-only on GPIO16 (D6/TX)
 #endif
 
 #if USE_BUZZER

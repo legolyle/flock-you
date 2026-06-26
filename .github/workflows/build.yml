@@ -17,9 +17,9 @@ jobs:
       - name: Collect binaries
         run: |
           mkdir -p out
-          cp .pio/build/xiao_esp32s3/firmware.bin   out/flock-you-xiao_esp32s3-firmware.bin
-          cp .pio/build/xiao_esp32s3/bootloader.bin out/flock-you-xiao_esp32s3-bootloader.bin
-          cp .pio/build/xiao_esp32s3/partitions.bin out/flock-you-xiao_esp32s3-partitions.bin
+          cp .pio/build/seeed_xiao_esp32c6/firmware.bin   out/flock-you-xiao_esp32c6-firmware.bin
+          cp .pio/build/seeed_xiao_esp32c6/bootloader.bin out/flock-you-xiao_esp32c6-bootloader.bin
+          cp .pio/build/seeed_xiao_esp32c6/partitions.bin out/flock-you-xiao_esp32c6-partitions.bin
           ls -la out/
       - name: Upload as workflow artifact (always)
         uses: actions/upload-artifact@v4
@@ -34,7 +34,7 @@ jobs:
           name: Build ${{ github.run_number }}
           body: |
             Automated build from commit ${{ github.sha }}.
-            Board: Seeed XIAO ESP32-S3.
+            Board: Seeed XIAO ESP32-C6 (4 MB flash, no PSRAM).
             Flash offsets: bootloader 0x0, partitions 0x8000, firmware 0x10000.
           files: out/*
           generate_release_notes: false
